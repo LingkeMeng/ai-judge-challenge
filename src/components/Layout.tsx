@@ -5,7 +5,7 @@ export function Layout() {
     <div className="layout">
       <header>
       <nav>
-        <Link to="/">Home</Link> | <Link to="/upload">Upload</Link>
+        <Link to="/">Home</Link> | <Link to="/upload">Upload</Link> | <Link to="/judges">Judges</Link> | <Link to="/queue">Queue</Link>
       </nav>
       </header>
       <main>

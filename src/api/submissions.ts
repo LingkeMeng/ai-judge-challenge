@@ -10,6 +10,17 @@ export async function fetchSubmissions(): Promise<ApiResponse<Submission[]>> {
   return { data: data ?? [], error: null }
 }
 
+// Fetch by queueId
+export async function fetchSubmissionsByQueueId(queueId: string): Promise<ApiResponse<Submission[]>> {
+  const { data, error } = await supabase
+    .from('submissions')
+    .select('*')
+    .eq('queue_id', queueId)
+    .order('created_at', { ascending: false })
+  if (error) return { data: null, error: handleError(error) }
+  return { data: data ?? [], error: null }
+}
+
 // Fetch by id
 export async function fetchSubmission(id: string): Promise<ApiResponse<Submission | null>> {
   const { data, error } = await supabase.from('submissions').select('*').eq('id', id).single()

@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Layout } from './components'
-import { HomePage, UploadPage } from './pages'
+import { HomePage, UploadPage, JudgesPage, QueuePage } from './pages'
 import './App.css'
 
 function App() {
@@ -10,6 +10,8 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="upload" element={<UploadPage />} />
+          <Route path="judges" element={<JudgesPage />} />
+          <Route path="queue" element={<QueuePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -39,6 +39,11 @@ export interface Database {
         Insert: AnswerInsert
         Update: AnswerUpdate
       }
+      judge_assignments: {
+        Row: JudgeAssignment
+        Insert: JudgeAssignmentInsert
+        Update: JudgeAssignmentUpdate
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -66,12 +71,17 @@ export type SubmissionUpdate = Partial<Omit<Submission, 'id' | 'created_at'>>
 export interface Judge {
   id: string
   name: string
+  prompt: string | null
+  model_name: string | null
+  active: boolean
   created_at: string
 }
 
-export type JudgeInsert = Omit<Judge, 'id' | 'created_at'> & {
-  id?: string
-  created_at?: string
+export type JudgeInsert = {
+  name: string
+  prompt?: string | null
+  model_name?: string | null
+  active?: boolean
 }
 
 export type JudgeUpdate = Partial<Omit<Judge, 'id' | 'created_at'>>
@@ -155,6 +165,20 @@ export type AnswerInsert = Omit<Answer, 'id' | 'created_at'> & {
 }
 
 export type AnswerUpdate = Partial<Omit<Answer, 'id' | 'submission_id' | 'question_id' | 'created_at'>>
+
+export interface JudgeAssignment {
+  id: string
+  question_template_id: string
+  judge_id: string
+  created_at: string
+}
+
+export type JudgeAssignmentInsert = Omit<JudgeAssignment, 'id' | 'created_at'> & {
+  id?: string
+  created_at?: string
+}
+
+export type JudgeAssignmentUpdate = Partial<Omit<JudgeAssignment, 'id' | 'question_template_id' | 'judge_id' | 'created_at'>>
 
 // ============ API Response Types ============
 

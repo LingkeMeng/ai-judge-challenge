@@ -62,32 +62,9 @@ src/
 ---
 
 ## Trade-offs & Decisions
+| Area                      | Decision                                                                          | Reason                                                                          | Trade-off                                                                                                                 |
+| ------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Authentication / RBAC** | No user login system or role-based access control                                 | Reduced scope and implementation time; avoided OAuth/session complexity         | Cannot distinguish users or enforce permissions. Production deployment should use JWT-based auth and RBAC.                |
+| **Caching**               | No caching for LLM evaluation results; every run triggers a new OpenAI call       | Simplifies implementation and ensures the latest evaluation is always generated | Duplicate evaluations increase latency and cost. Production system could cache results using a deterministic prompt hash. |
+| **Pagination**            | No pagination for Evaluations, Judges, or Submissions; all records loaded at once | Dataset is small/medium in this prototype; simpler UI and API logic             | Does not scale well for large datasets. Future improvement would include pagination and/or virtual scrolling.             |
 
-| Area | Decision | Reason |
-|------|----------|--------|
-| **LLM calls from client** | OpenAI API called directly from the browser | Keeps the stack simple (no backend). For production, a backend/edge function would proxy API calls to avoid exposing the key. |
-| **Verdict mapping** | Spec says "inconclusive"; DB uses "partial" | Schema uses `partial` and `pending`; LLM can return "inconclusive" and we map it to `partial` for consistency. |
-| **Question templates** | Find-or-create by content on import | Same question text across submissions shares one template, so judge assignment is per question type instead of per submission. |
-| **No pagination** | Load all evaluations, queues, judges | Fine for small/medium datasets; would add pagination for large-scale use. |
-| **No file attachments** | Not implemented | Bonus feature; would require multimodal LLM support and file upload storage. |
-| **Single LLM provider** | OpenAI only | Simplest path; could add an abstraction for Anthropic/Gemini later. |
-
----
-
-## Evaluation Rubric Notes
-
-| Category | Notes |
-|----------|-------|
-| **Correctness** | All required flows work: import → judges CRUD → assign → run → results |
-| **Backend & LLM** | Supabase for persistence; `runJudges.ts` handles LLM calls and JSON parsing |
-| **Code quality** | Page-level components, small API modules, `useCallback` for loaders |
-| **Types & safety** | Shared types in `types/index.ts`, no `any` in core logic |
-| **UX & polish** | Loading states, empty states, pass rate, multi-select filters |
-
----
-
-## Submission Instructions
-
-- **Screen recording** (Loom, MP4, or GIF) covering: Import sample data → Judges CRUD → Judge assignment → Run evaluations → Results view
-- Email recording URL to: **hiring@besimple.ai**
-- Reviews within 24 hours; qualified candidates will be contacted for a video-call interview

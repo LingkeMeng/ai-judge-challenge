@@ -91,7 +91,7 @@ export function JudgesPage() {
   }
 
   const handleDeactivate = async (judge: Judge) => {
-    if (!confirm(`确定要停用 "${judge.name}" 吗？`)) return
+    if (!confirm(`Deactivate "${judge.name}"?`)) return
     const { error: err } = await updateJudge(judge.id, { active: false })
     if (err) setError(err.message)
     else loadJudges()
@@ -101,7 +101,7 @@ export function JudgesPage() {
     <div className="judges-page" style={{ padding: '2rem', maxWidth: 900 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h1>Judges</h1>
-        <button onClick={openCreate}>新建 Judge</button>
+        <button onClick={openCreate}>New Judge</button>
       </div>
 
       {error && (
@@ -120,7 +120,7 @@ export function JudgesPage() {
       )}
 
       {loading ? (
-        <p>加载中...</p>
+        <p>Loading...</p>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -128,7 +128,7 @@ export function JudgesPage() {
               <th style={{ textAlign: 'left', padding: '0.75rem' }}>Name</th>
               <th style={{ textAlign: 'left', padding: '0.75rem' }}>Model</th>
               <th style={{ textAlign: 'left', padding: '0.75rem' }}>Active</th>
-              <th style={{ textAlign: 'right', padding: '0.75rem' }}>操作</th>
+              <th style={{ textAlign: 'right', padding: '0.75rem' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -136,14 +136,14 @@ export function JudgesPage() {
               <tr key={j.id} style={{ borderBottom: '1px solid #333' }}>
                 <td style={{ padding: '0.75rem' }}>{j.name}</td>
                 <td style={{ padding: '0.75rem' }}>{j.model_name ?? '-'}</td>
-                <td style={{ padding: '0.75rem' }}>{j.active ? '是' : '否'}</td>
+                <td style={{ padding: '0.75rem' }}>{j.active ? 'Yes' : 'No'}</td>
                 <td style={{ padding: '0.75rem', textAlign: 'right' }}>
                   <button
                     type="button"
                     onClick={() => openEdit(j)}
                     style={{ marginRight: '0.5rem' }}
                   >
-                    编辑
+                    Edit
                   </button>
                   {j.active && (
                     <button
@@ -151,7 +151,7 @@ export function JudgesPage() {
                       onClick={() => handleDeactivate(j)}
                       style={{ color: '#f88' }}
                     >
-                      停用
+                      Deactivate
                     </button>
                   )}
                 </td>
@@ -161,7 +161,7 @@ export function JudgesPage() {
         </table>
       )}
 
-      {judges.length === 0 && !loading && <p>暂无 judges，点击「新建 Judge」添加</p>}
+      {judges.length === 0 && !loading && <p>No judges yet. Click "New Judge" to add one.</p>}
 
       {modalOpen && (
         <div
@@ -189,7 +189,7 @@ export function JudgesPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 style={{ marginTop: 0 }}>
-              {modalOpen === 'create' ? '新建 Judge' : '编辑 Judge'}
+              {modalOpen === 'create' ? 'New Judge' : 'Edit Judge'}
             </h2>
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '1rem' }}>
@@ -239,10 +239,10 @@ export function JudgesPage() {
               </div>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                 <button type="button" onClick={closeModal}>
-                  取消
+                  Cancel
                 </button>
                 <button type="submit">
-                  {modalOpen === 'create' ? '创建' : '保存'}
+                  {modalOpen === 'create' ? 'Create' : 'Save'}
                 </button>
               </div>
             </form>

@@ -81,7 +81,7 @@ export interface RunJudgesDiagnostic {
 export async function getRunJudgesDiagnostics(queueId: string): Promise<RunJudgesDiagnostic | null> {
   const { data: subs } = await fetchSubmissionsByQueueId(queueId.trim())
   if (!subs?.length) {
-    return { submissionsCount: 0, questionsWithAnswersCount: 0, totalJudgeAssignments: 0, activeJudgesCount: 0, message: '无 submissions' }
+    return { submissionsCount: 0, questionsWithAnswersCount: 0, totalJudgeAssignments: 0, activeJudgesCount: 0, message: 'No submissions' }
   }
 
   const { data: judges } = await fetchJudges()
@@ -103,10 +103,10 @@ export async function getRunJudgesDiagnostics(queueId: string): Promise<RunJudge
   }
 
   let message = ''
-  if (activeJudges.length === 0) message = '无 active Judge，请在 Judges 页面创建'
-  else if (questionsWithAnswers === 0) message = '无带答案的 question'
-  else if (totalAssignments === 0) message = '无 Judge 分配，请为每题选择 Judge 并点击「保存」'
-  else message = `可运行 ${questionsWithAnswers} 题 × 分配数 = ${totalAssignments} 个任务`
+  if (activeJudges.length === 0) message = 'No active Judge. Create one on the Judges page'
+  else if (questionsWithAnswers === 0) message = 'No questions with answers'
+  else if (totalAssignments === 0) message = 'No Judge assignments. Select judges per question and click Save'
+  else message = `Can run ${questionsWithAnswers} questions × assignments = ${totalAssignments} tasks`
 
   return {
     submissionsCount: subs.length,

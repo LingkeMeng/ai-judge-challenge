@@ -130,7 +130,7 @@ export function QueuePage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h1 style={{ margin: 0 }}>Queue: {queueId}</h1>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <Link to="/queues">← 切换 Queue</Link>
+          <Link to="/queues">← Switch Queue</Link>
           <button
             type="button"
             onClick={handleRunJudges}
@@ -151,7 +151,7 @@ export function QueuePage() {
             borderRadius: 8,
           }}
         >
-          <strong>Run AI Judges 结果：</strong>
+          <strong>Run AI Judges Result:</strong>
           <ul style={{ margin: '0.5rem 0 0 1rem', paddingLeft: 0 }}>
             <li>Planned: {runResult.planned}</li>
             <li>Completed: {runResult.completed}</li>
@@ -159,14 +159,14 @@ export function QueuePage() {
           </ul>
           {runResult.planned === 0 && runResult.diagnostic && (
             <p style={{ margin: '0.75rem 0 0', fontSize: '0.9em' }}>
-              <strong>诊断：</strong> {runResult.diagnostic.message}
+              <strong>Diagnostic:</strong> {runResult.diagnostic.message}
               <br />
-              (submissions: {runResult.diagnostic.submissionsCount}, 有答案的题: {runResult.diagnostic.questionsWithAnswersCount}, 分配数: {runResult.diagnostic.totalJudgeAssignments}, active judges: {runResult.diagnostic.activeJudgesCount})
+              (submissions: {runResult.diagnostic.submissionsCount}, questions with answers: {runResult.diagnostic.questionsWithAnswersCount}, assignments: {runResult.diagnostic.totalJudgeAssignments}, active judges: {runResult.diagnostic.activeJudgesCount})
             </p>
           )}
           {runResult.failed > 0 && runResult.failureReasons && runResult.failureReasons.length > 0 && (
             <p style={{ margin: '0.75rem 0 0', fontSize: '0.9em', color: '#faa' }}>
-              <strong>失败原因：</strong>
+              <strong>Failure reasons:</strong>
               <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: 0 }}>
                 {runResult.failureReasons.map((r, i) => (
                   <li key={i}>{r}</li>
@@ -192,7 +192,7 @@ export function QueuePage() {
         </div>
       )}
 
-      {loading && <p>加载中...</p>}
+      {loading && <p>Loading...</p>}
 
       {!loading && submissions.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -209,7 +209,7 @@ export function QueuePage() {
               <h3 style={{ marginTop: 0 }}>
                 Submission: {submission.queue_id} ({new Date(submission.created_at).toLocaleString()})
               </h3>
-              {questions.length === 0 && <p>暂无 questions</p>}
+              {questions.length === 0 && <p>No questions</p>}
               {questions.map(({ question, answer, assignedJudgeIds }) => (
                 <div
                   key={question.id}
@@ -245,13 +245,13 @@ export function QueuePage() {
                         </option>
                       ))}
                     </select>
-                    <span style={{ fontSize: '0.85em', color: '#888' }}>Ctrl/Shift 多选</span>
+                    <span style={{ fontSize: '0.85em', color: '#888' }}>Ctrl+Shift to multi-select</span>
                     <button
                       type="button"
                       onClick={() => handleSave(question.question_template_id)}
                       disabled={savingId === question.question_template_id}
                     >
-                      {savingId === question.question_template_id ? '保存中...' : '保存'}
+                      {savingId === question.question_template_id ? 'Saving...' : 'Save'}
                     </button>
                   </div>
                 </div>
@@ -262,7 +262,7 @@ export function QueuePage() {
       )}
 
       {!loading && queueId.trim() && submissions.length === 0 && (
-        <p>未找到 queueId 为 "{queueId}" 的 submissions</p>
+        <p>No submissions found for queue "{queueId}"</p>
       )}
     </div>
   )

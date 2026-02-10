@@ -67,7 +67,7 @@ export function ResultsPage() {
       }))
       setEvaluations(enriched)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '加载失败')
+      setError(err instanceof Error ? err.message : 'Load failed')
     } finally {
       setLoading(false)
     }
@@ -192,14 +192,14 @@ export function ResultsPage() {
         </div>
       )}
 
-      {loading && <p>加载中...</p>}
+      {loading && <p>Loading...</p>}
 
       {!loading && evaluations.length === 0 && (
-        <p>暂无 evaluations，请先在 Queues 页面运行 Run AI Judges。</p>
+        <p>No evaluations yet. Run AI Judges on the Queues page first.</p>
       )}
 
       {!loading && evaluations.length > 0 && filtered.length === 0 && (
-        <p>当前筛选条件下无结果。</p>
+        <p>No results match the current filters.</p>
       )}
 
       {!loading && filtered.length > 0 && (

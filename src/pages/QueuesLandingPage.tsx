@@ -35,11 +35,11 @@ export function QueuesLandingPage() {
       </form>
 
       <div style={{ marginTop: '2rem' }}>
-        <h3 style={{ marginBottom: '0.75rem' }}>可用 Queues</h3>
+        <h3 style={{ marginBottom: '0.75rem' }}>Available Queues</h3>
         {loading ? (
-          <p>加载中...</p>
+          <p>Loading...</p>
         ) : queueIds.length === 0 ? (
-          <p>暂无 queue，请先在 Upload 页面导入数据。</p>
+          <p>No queues yet. Import data on the Upload page first.</p>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {queueIds.map((id) => (

@@ -37,12 +37,12 @@ export function UploadPage() {
 
   const handleUpload = useCallback(async () => {
     if (!file) {
-      setError('请选择文件')
+      setError('Please select a file')
       return
     }
 
     if (!file.name.endsWith('.json')) {
-      setError('请上传 .json 文件')
+      setError('Please upload a .json file')
       return
     }
 
@@ -64,8 +64,8 @@ export function UploadPage() {
 
   return (
     <div className="upload-page" style={{ padding: '2rem', maxWidth: 600 }}>
-      <h1>导入数据</h1>
-      <p>上传 JSON 文件，解析为 submissions / questions / answers 并存入 Supabase</p>
+      <h1>Upload</h1>
+      <p>Upload a JSON file to import submissions, questions, and answers into Supabase.</p>
 
       <div style={{ marginTop: '1.5rem' }}>
         <input
@@ -76,7 +76,7 @@ export function UploadPage() {
         />
         <br />
         <button onClick={handleUpload} disabled={loading || !file}>
-          {loading ? '导入中...' : '上传并导入'}
+          {loading ? 'Importing...' : 'Upload & Import'}
         </button>
       </div>
 
@@ -91,7 +91,7 @@ export function UploadPage() {
             borderRadius: 8,
           }}
         >
-          <strong>错误：</strong> {error}
+          <strong>Error:</strong> {error}
         </div>
       )}
 
@@ -105,7 +105,7 @@ export function UploadPage() {
             borderRadius: 8,
           }}
         >
-          <strong>导入成功</strong>
+          <strong>Import successful</strong>
           <ul style={{ margin: '0.5rem 0 0 1rem', paddingLeft: 0 }}>
             <li>Submissions: {result.submissionsCount}</li>
             <li>Questions: {result.questionsCount}</li>
@@ -113,13 +113,13 @@ export function UploadPage() {
           </ul>
           {result.errors.length > 0 && (
             <details style={{ marginTop: '0.75rem' }}>
-              <summary>部分错误 ({result.errors.length})</summary>
+              <summary>Partial errors ({result.errors.length})</summary>
               <ul style={{ margin: '0.25rem 0 0 1rem', fontSize: '0.9em', color: '#faa' }}>
                 {result.errors.slice(0, 5).map((e, i) => (
                   <li key={i}>{e}</li>
                 ))}
                 {result.errors.length > 5 && (
-                  <li>… 还有 {result.errors.length - 5} 个错误</li>
+                  <li>… and {result.errors.length - 5} more</li>
                 )}
               </ul>
             </details>
@@ -128,7 +128,7 @@ export function UploadPage() {
       )}
 
       <details style={{ marginTop: '2rem' }}>
-        <summary>预期 JSON 格式</summary>
+        <summary>Expected JSON format</summary>
         <pre
           style={{
             marginTop: '0.5rem',

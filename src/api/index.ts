@@ -2,6 +2,8 @@ export { handleError } from './utils'
 
 export {
   fetchSubmissions,
+  fetchSubmissionsByQueueId,
+  fetchQueueIds,
   fetchSubmission,
   createSubmission,
   updateSubmission,

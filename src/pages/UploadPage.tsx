@@ -1,15 +1,26 @@
 import { useState, useCallback } from 'react'
 import { parseImportJson, importToSupabase, type ImportResult } from '../lib/importJson'
-const EXPECTED_FORMAT = `{
-  "submissions": [
-    {
-      "queueId": "queue-1",
-      "questions": [
-        { "content": "Question text?", "answer": "Answer text" }
-      ]
+const EXPECTED_FORMAT = `[
+  {
+    "id": "sub_1",
+    "queueId": "queue_1",
+    "labelingTaskId": "task_1",
+    "createdAt": 1690000000000,
+    "questions": [
+      {
+        "rev": 1,
+        "data": {
+          "id": "q_template_1",
+          "questionType": "single_choice_with_reasoning",
+          "questionText": "Is the sky blue?"
+        }
+      }
+    ],
+    "answers": {
+      "q_template_1": { "choice": "yes", "reasoning": "Observed on a clear day." }
     }
-  ]
-}`
+  }
+]`
 
 export function UploadPage() {
   const [file, setFile] = useState<File | null>(null)

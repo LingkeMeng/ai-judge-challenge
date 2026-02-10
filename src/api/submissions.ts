@@ -10,6 +10,16 @@ export async function fetchSubmissions(): Promise<ApiResponse<Submission[]>> {
   return { data: data ?? [], error: null }
 }
 
+// Fetch distinct queue IDs
+export async function fetchQueueIds(): Promise<ApiResponse<string[]>> {
+  const { data, error } = await supabase
+    .from('submissions')
+    .select('queue_id')
+  if (error) return { data: null, error: handleError(error) }
+  const ids = [...new Set((data ?? []).map((r) => r.queue_id))]
+  return { data: ids.sort(), error: null }
+}
+
 // Fetch by queueId
 export async function fetchSubmissionsByQueueId(queueId: string): Promise<ApiResponse<Submission[]>> {
   const { data, error } = await supabase

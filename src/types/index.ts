@@ -200,21 +200,35 @@ export interface PaginatedResponse<T> {
   pageSize: number
 }
 
-// ============ Import Types (Upload JSON) ============
+// ============ Import Types (Upload JSON - spec format) ============
+
+export interface ImportQuestionData {
+  id: string
+  questionType?: string
+  questionText: string
+}
 
 export interface ImportQuestion {
-  content: string
-  answer: string
+  rev?: number
+  data: ImportQuestionData
+}
+
+export interface ImportAnswer {
+  choice?: string
+  reasoning?: string
 }
 
 export interface ImportSubmission {
+  id?: string
   queueId: string
+  labelingTaskId?: string
+  createdAt?: number
   questions: ImportQuestion[]
+  answers: Record<string, ImportAnswer>
 }
 
-export interface ImportData {
-  submissions: ImportSubmission[]
-}
+// Root is array of submissions
+export type ImportData = ImportSubmission[]
 
 // ============ Common Types ============
 

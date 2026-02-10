@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { fetchSubmissionsByQueueId } from '../api/submissions'
 import { fetchQuestionsBySubmission } from '../api/questions'
 import { fetchAnswersBySubmission } from '../api/answers'
@@ -7,6 +8,7 @@ import {
   fetchJudgeAssignmentsByQuestionTemplate,
   setJudgeAssignmentsForQuestionTemplate,
 } from '../api/judgeAssignments'
+import { runJudges, type RunJudgesResult } from '../lib/runJudges'
 import type { Submission, Question, Answer, Judge } from '../types'
 
 interface SubmissionWithDetails {
@@ -19,13 +21,16 @@ interface SubmissionWithDetails {
 }
 
 export function QueuePage() {
-  const [queueId, setQueueId] = useState('')
+  const { queueId: queueIdParam } = useParams<{ queueId: string }>()
+  const queueId = queueIdParam ?? ''
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submissions, setSubmissions] = useState<SubmissionWithDetails[]>([])
   const [judges, setJudges] = useState<Judge[]>([])
   const [selections, setSelections] = useState<Record<string, string[]>>({})
   const [savingId, setSavingId] = useState<string | null>(null)
+  const [runResult, setRunResult] = useState<RunJudgesResult | null>(null)
+  const [running, setRunning] = useState(false)
 
   const loadQueue = useCallback(async () => {
     if (!queueId.trim()) return
@@ -67,11 +72,9 @@ export function QueuePage() {
     setLoading(false)
   }, [queueId])
 
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    loadQueue()
-  }
+  useEffect(() => {
+    if (queueId) loadQueue()
+  }, [queueId, loadQueue])
 
   const handleSelectionChange = (questionTemplateId: string, judgeIds: string[]) => {
     setSelections((prev) => ({ ...prev, [questionTemplateId]: judgeIds }))
@@ -98,19 +101,81 @@ export function QueuePage() {
     setSavingId(null)
   }
 
+  const handleRunJudges = async () => {
+    if (!queueId.trim()) return
+    setRunning(true)
+    setError(null)
+    setRunResult(null)
+    try {
+      const result = await runJudges(queueId.trim())
+      setRunResult(result)
+      loadQueue()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Run failed')
+    } finally {
+      setRunning(false)
+    }
+  }
+
+  if (!queueId) {
+    return (
+      <div style={{ padding: '2rem' }}>
+        <p>No queue ID. <Link to="/queues">Select a queue</Link></p>
+      </div>
+    )
+  }
+
   return (
     <div className="queue-page" style={{ padding: '2rem', maxWidth: 1000 }}>
-      <h1>Queue</h1>
-      <form onSubmit={handleSearch} style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem' }}>
-        <input
-          type="text"
-          value={queueId}
-          onChange={(e) => setQueueId(e.target.value)}
-          placeholder="Queue ID"
-          style={{ padding: '0.5rem', minWidth: 200 }}
-        />
-        <button type="submit">加载</button>
-      </form>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h1 style={{ margin: 0 }}>Queue: {queueId}</h1>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <Link to="/queues">← 切换 Queue</Link>
+          <button
+            type="button"
+            onClick={handleRunJudges}
+            disabled={loading || running || submissions.length === 0}
+          >
+            {running ? 'Running...' : 'Run AI Judges'}
+          </button>
+        </div>
+      </div>
+
+      {runResult && (
+        <div
+          style={{
+            marginBottom: '1rem',
+            padding: '1rem',
+            background: runResult.planned === 0 ? '#2a2a1a' : runResult.failed > 0 ? '#2a1a1a' : '#1a2a1a',
+            color: runResult.planned === 0 ? '#fa0' : runResult.failed > 0 ? '#faa' : '#afa',
+            borderRadius: 8,
+          }}
+        >
+          <strong>Run AI Judges 结果：</strong>
+          <ul style={{ margin: '0.5rem 0 0 1rem', paddingLeft: 0 }}>
+            <li>Planned: {runResult.planned}</li>
+            <li>Completed: {runResult.completed}</li>
+            <li>Failed: {runResult.failed}</li>
+          </ul>
+          {runResult.planned === 0 && runResult.diagnostic && (
+            <p style={{ margin: '0.75rem 0 0', fontSize: '0.9em' }}>
+              <strong>诊断：</strong> {runResult.diagnostic.message}
+              <br />
+              (submissions: {runResult.diagnostic.submissionsCount}, 有答案的题: {runResult.diagnostic.questionsWithAnswersCount}, 分配数: {runResult.diagnostic.totalJudgeAssignments}, active judges: {runResult.diagnostic.activeJudgesCount})
+            </p>
+          )}
+          {runResult.failed > 0 && runResult.failureReasons && runResult.failureReasons.length > 0 && (
+            <p style={{ margin: '0.75rem 0 0', fontSize: '0.9em', color: '#faa' }}>
+              <strong>失败原因：</strong>
+              <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: 0 }}>
+                {runResult.failureReasons.map((r, i) => (
+                  <li key={i}>{r}</li>
+                ))}
+              </ul>
+            </p>
+          )}
+        </div>
+      )}
 
       {error && (
         <div

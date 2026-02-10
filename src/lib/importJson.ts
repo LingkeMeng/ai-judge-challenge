@@ -1,4 +1,4 @@
-import type { ImportData } from '../types'
+import type { ImportData, ImportSubmission } from '../types'
 import { createSubmission } from '../api/submissions'
 import { createQuestionTemplate } from '../api/questionTemplates'
 import { createQuestion } from '../api/questions'
@@ -11,17 +11,20 @@ export interface ImportResult {
   errors: string[]
 }
 
+function formatAnswer(answer: { choice?: string; reasoning?: string }): string {
+  const parts: string[] = []
+  if (answer.choice != null) parts.push(`choice: ${answer.choice}`)
+  if (answer.reasoning != null) parts.push(`reasoning: ${answer.reasoning}`)
+  return parts.join(', ') || ''
+}
+
 export function parseImportJson(text: string): ImportData {
   const data = JSON.parse(text) as unknown
-  if (!data || typeof data !== 'object') {
-    throw new Error('Invalid JSON: root must be an object')
+  if (!Array.isArray(data)) {
+    throw new Error('Invalid JSON: root must be an array of submissions')
   }
-  const obj = data as Record<string, unknown>
-  if (!Array.isArray(obj.submissions)) {
-    throw new Error('Invalid JSON: "submissions" must be an array')
-  }
-  for (let i = 0; i < obj.submissions.length; i++) {
-    const s = obj.submissions[i]
+  for (let i = 0; i < data.length; i++) {
+    const s = data[i]
     if (!s || typeof s !== 'object') {
       throw new Error(`Invalid JSON: submissions[${i}] must be an object`)
     }
@@ -38,12 +41,20 @@ export function parseImportJson(text: string): ImportData {
         throw new Error(`Invalid JSON: submissions[${i}].questions[${j}] must be an object`)
       }
       const qObj = q as Record<string, unknown>
-      if (typeof qObj.content !== 'string') {
-        throw new Error(`Invalid JSON: submissions[${i}].questions[${j}].content must be a string`)
+      const qData = qObj.data
+      if (!qData || typeof qData !== 'object') {
+        throw new Error(`Invalid JSON: submissions[${i}].questions[${j}].data must be an object`)
       }
-      if (typeof qObj.answer !== 'string') {
-        throw new Error(`Invalid JSON: submissions[${i}].questions[${j}].answer must be a string`)
+      const d = qData as Record<string, unknown>
+      if (typeof d.id !== 'string') {
+        throw new Error(`Invalid JSON: submissions[${i}].questions[${j}].data.id must be a string`)
       }
+      if (typeof d.questionText !== 'string') {
+        throw new Error(`Invalid JSON: submissions[${i}].questions[${j}].data.questionText must be a string`)
+      }
+    }
+    if (!sub.answers || typeof sub.answers !== 'object') {
+      throw new Error(`Invalid JSON: submissions[${i}].answers must be an object`)
     }
   }
   return data as ImportData
@@ -57,10 +68,11 @@ export async function importToSupabase(data: ImportData): Promise<ImportResult> 
     errors: [],
   }
 
-  for (const sub of data.submissions) {
+  for (let i = 0; i < data.length; i++) {
+    const sub = data[i] as ImportSubmission
     const subRes = await createSubmission({ queue_id: sub.queueId })
     if (subRes.error) {
-      result.errors.push(`Submission ${sub.queueId}: ${subRes.error.message}`)
+      result.errors.push(`Submission ${i} (${sub.queueId}): ${subRes.error.message}`)
       continue
     }
     if (!subRes.data) continue
@@ -68,10 +80,14 @@ export async function importToSupabase(data: ImportData): Promise<ImportResult> 
     const submissionId = subRes.data.id
     result.submissionsCount++
 
+    const answersObj = sub.answers ?? {}
     for (const q of sub.questions) {
-      const tmplRes = await createQuestionTemplate({ content: q.content })
+      const tmplId = q.data.id
+      const questionText = q.data.questionText
+
+      const tmplRes = await createQuestionTemplate({ content: questionText })
       if (tmplRes.error) {
-        result.errors.push(`Question template: ${tmplRes.error.message}`)
+        result.errors.push(`Question template ${tmplId}: ${tmplRes.error.message}`)
         continue
       }
       if (!tmplRes.data) continue
@@ -79,20 +95,23 @@ export async function importToSupabase(data: ImportData): Promise<ImportResult> 
       const questionRes = await createQuestion({
         submission_id: submissionId,
         question_template_id: tmplRes.data.id,
-        content: q.content,
+        content: questionText,
       })
       if (questionRes.error) {
-        result.errors.push(`Question: ${questionRes.error.message}`)
+        result.errors.push(`Question ${tmplId}: ${questionRes.error.message}`)
         continue
       }
       if (!questionRes.data) continue
 
       result.questionsCount++
 
+      const answerRaw = answersObj[tmplId]
+      const answerContent = answerRaw ? formatAnswer(answerRaw) : ''
+
       const ansRes = await createAnswer({
         submission_id: submissionId,
         question_id: questionRes.data.id,
-        content: q.answer,
+        content: answerContent,
       })
       if (ansRes.error) {
         result.errors.push(`Answer: ${ansRes.error.message}`)
